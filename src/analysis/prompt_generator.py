@@ -74,8 +74,7 @@ AWSのTerraformコードの可用性を評価してください。AWS Well-Archi
   "recommendations": [
     {{
       "priority": "高/中/低",
-      "description": "推奨事項の詳細説明",
-      "terraform_example": "実装例（Terraformコード）"
+      "description": "推奨事項の詳細説明"
     }}
   ]
 }}
@@ -122,8 +121,7 @@ Please provide your analysis in the following JSON format:
   "recommendations": [
     {{
       "priority": "high/medium/low",
-      "description": "Detailed description of the recommendation",
-      "terraform_example": "Implementation example (Terraform code)"
+      "description": "Detailed description of the recommendation"
     }}
   ]
 }}
