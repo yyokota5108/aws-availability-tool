@@ -1,6 +1,7 @@
 """
 AWS Bedrock APIとのインタラクションを担当するモジュール
 """
+
 import json
 import os
 import time
@@ -12,15 +13,18 @@ from rich.console import Console
 # Richコンソールを初期化
 console = Console()
 
+
 class BedrockClient:
     """
     AWS BedrockとのAPIインタラクションを処理するクラス
     """
-    
-    def __init__(self, 
-                 bedrock_client=None, 
-                 model_id: str = "anthropic.claude-3-5-sonnet-20240620-v1:0",
-                 region_name: Optional[str] = None):
+
+    def __init__(
+        self,
+        bedrock_client: Any = None,
+        model_id: str = "anthropic.claude-3-5-sonnet-20240620-v1:0",
+        region_name: Optional[str] = None,
+    ) -> None:
         """
         BedrockClientの初期化
 
@@ -31,12 +35,13 @@ class BedrockClient:
         """
         self.region_name = region_name or os.environ.get("AWS_REGION", "ap-northeast-1")
         self.bedrock_client = bedrock_client or boto3.client(
-            service_name="bedrock-runtime",
-            region_name=self.region_name
+            service_name="bedrock-runtime", region_name=self.region_name
         )
         self.model_id = model_id
 
-    def invoke(self, prompt: str, max_tokens: int = 4096, temperature: float = 0.2) -> Dict[str, Any]:
+    def invoke(
+        self, prompt: str, max_tokens: int = 4096, temperature: float = 0.2
+    ) -> Dict[str, Any]:
         """
         Bedrockモデルを呼び出す
 
@@ -53,32 +58,26 @@ class BedrockClient:
             "anthropic_version": "bedrock-2023-05-31",
             "max_tokens": max_tokens,
             "temperature": temperature,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ]
+            "messages": [{"role": "user", "content": prompt}],
         }
-        
+
         start_time = time.time()
-        
+
         try:
             # Bedrockへリクエスト送信
             response = self.bedrock_client.invoke_model(
-                modelId=self.model_id,
-                body=json.dumps(request_body)
+                modelId=self.model_id, body=json.dumps(request_body)
             )
-            
+
             # レスポンスのデコード
-            response_body = json.loads(response.get('body').read().decode('utf-8'))
-            analysis_text = response_body.get('content', [{}])[0].get('text', '')
-            
+            response_body = json.loads(response.get("body").read().decode("utf-8"))
+            analysis_text = response_body.get("content", [{}])[0].get("text", "")
+
             elapsed_time = time.time() - start_time
             console.print(f"Bedrock呼び出し完了: [bold green]{elapsed_time:.1f}秒[/bold green]")
-            
+
             return {"text": analysis_text, "elapsed_time": elapsed_time}
-            
+
         except Exception as e:
             console.print(f"[bold red]エラー: Bedrockの呼び出しに失敗しました: {e}[/bold red]")
-            return {"error": str(e)} 
+            return {"error": str(e)}

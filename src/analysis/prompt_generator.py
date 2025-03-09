@@ -1,35 +1,37 @@
 """
 Bedrockへ送信するプロンプトを生成するモジュール
 """
+
 from typing import Dict, Any
+
 
 class PromptGenerator:
     """
     Terraform解析用のプロンプトを生成するクラス
     """
-    
+
     def __init__(self, language: str = "ja"):
         """
         PromptGeneratorの初期化
-        
+
         Args:
             language: プロンプトの言語（デフォルトは日本語）
         """
         self.language = language
-    
+
     def create_availability_prompt(self, terraform_data: Dict[str, Any]) -> str:
         """
         可用性分析のためのプロンプトを作成
-        
+
         Args:
             terraform_data: 分析対象のTerraformデータ
-            
+
         Returns:
             生成されたプロンプト
         """
         # Terraformデータをプロンプト用に整形
         terraform_json = self._format_terraform_data(terraform_data)
-        
+
         # プロンプトテンプレート
         if self.language == "ja":
             system_prompt = f"""
@@ -80,7 +82,9 @@ AWSのTerraformコードの可用性を評価してください。AWS Well-Archi
         else:
             # 英語のプロンプト
             system_prompt = f"""
-Please evaluate the availability of AWS resources defined in the Terraform code below. Analyze based on the AWS Well-Architected Framework's Reliability pillar and provide specific recommendations to improve the infrastructure's availability.
+Please evaluate the availability of AWS resources defined in the Terraform code below.
+Analyze based on the AWS Well-Architected Framework's Reliability pillar and provide
+specific recommendations to improve the infrastructure's availability.
 
 Analyze the following Terraform resources in JSON format:
 
@@ -121,24 +125,25 @@ Please provide your analysis in the following JSON format:
 }}
 ```
 
-Focus on important issues from a high availability perspective and prioritize improvements with the most significant impact.
+Focus on important issues from a high availability perspective and prioritize improvements
+with the most significant impact.
 """
-        
+
         return system_prompt
-    
+
     def _format_terraform_data(self, terraform_data: Dict[str, Any]) -> str:
         """
         Terraformデータを読みやすい形式に整形
-        
+
         Args:
             terraform_data: Terraformデータ
-            
+
         Returns:
             整形されたJSONテキスト
         """
         import json
-        
+
         # JSONの整形（読みやすさのため）
         if terraform_data:
             return json.dumps(terraform_data, indent=2, ensure_ascii=False)
-        return "{}" 
+        return "{}"
