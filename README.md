@@ -126,6 +126,86 @@ terraform-availability ~/projects/my-terraform-project \
     --json-output terraform_export.json
 ```
 
+## 設定管理
+
+### 設定ファイル
+
+このツールはYAML形式の設定ファイルをサポートしています。以下の場所の設定ファイルが自動的に読み込まれます（優先順位順）：
+
+1. `--config` オプションで指定されたパス
+2. カレントディレクトリの `config.yaml`
+3. カレントディレクトリの `config/config.yaml`
+4. ホームディレクトリの `.aws_availability/config.yaml`
+
+設定ファイルのサンプルは `config/config.yaml.example` にあります。コピーして使用できます：
+
+```bash
+cp config/config.yaml.example config/config.yaml
+# 必要に応じて編集
+```
+
+設定ファイルの基本構造：
+
+```yaml
+# AWS関連設定
+aws:
+  region: ap-northeast-1
+  model_id: anthropic.claude-3-5-sonnet-20240620-v1:0
+
+# 出力設定
+output:
+  directory: output
+  default_json_filename: terraform_parsed.json
+  default_report_filename: availability_report.json
+  default_html_filename: availability_report.html
+
+# アプリケーション設定
+app:
+  language: ja
+  debug: false
+```
+
+### 環境変数
+
+設定ファイルの代わりに、または設定ファイルを上書きするために環境変数を使用できます：
+
+```bash
+# AWS設定
+export AWS_REGION=us-east-1
+export AWS_MODEL_ID=anthropic.claude-3-5-sonnet-20240620-v1:0
+
+# 出力設定
+export OUTPUT_DIRECTORY=custom_output
+
+# アプリケーション設定
+export APP_LANGUAGE=en
+export APP_DEBUG=true
+```
+
+環境変数を `.env` ファイルに保存することもできます。サンプルは `.env.example` にあります：
+
+```bash
+cp .env.example .env
+# 必要に応じて編集
+```
+
+### 設定の優先順位
+
+設定は以下の優先順位で適用されます：
+
+1. コマンドラインオプション（例：`--region`）
+2. 環境変数（例：`AWS_REGION`）
+3. 設定ファイル
+4. デフォルト値
+
+詳細な設定ヘルプを表示するには：
+
+```bash
+terraform-availability --config-help
+```
+
+より詳細な設定管理については、[設定管理ガイド](docs/configuration.md)を参照してください。
+
 ## プロジェクト構造
 
 ```
@@ -133,12 +213,13 @@ aws_availability_tool/
 ├── src/                   # ソースコード
 │   ├── analysis/          # 分析関連モジュール
 │   ├── client/            # AWS APIクライアント
+│   ├── config/            # 設定管理
 │   ├── reporting/         # レポート生成
 │   ├── terraform/         # Terraform解析
 │   └── ui/                # ユーザーインターフェース
+├── config/                # 設定ファイル
 ├── tests/                 # テストコード
-├── docs/                  # ドキュメント
-└── config/                # 設定ファイル
+└── docs/                  # ドキュメント
 ```
 
 ## 評価項目
