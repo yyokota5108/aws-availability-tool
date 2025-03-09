@@ -4,7 +4,9 @@
 
 import os
 import json
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
+
+from src.config import get_settings
 
 
 class ReportGenerator:
@@ -12,15 +14,16 @@ class ReportGenerator:
     分析結果からレポートを生成するクラス
     """
 
-    def __init__(self, output_dir: str = "output"):
+    def __init__(self, output_dir: Optional[str] = None):
         """
         ReportGeneratorの初期化
 
         Args:
-            output_dir: 出力ディレクトリのパス
+            output_dir: 出力ディレクトリのパス（Noneの場合は設定から取得）
         """
-        self.output_dir = output_dir
-        os.makedirs(output_dir, exist_ok=True)
+        settings = get_settings()
+        self.output_dir = output_dir or settings["output"]["directory"]
+        os.makedirs(self.output_dir, exist_ok=True)
 
     def save_json_report(self, results: Dict[str, Any], output_file: str) -> str:
         """

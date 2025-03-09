@@ -1,0 +1,26 @@
+# AWS Terraform可用性チェックツール - 設定ファイル
+
+# AWS関連設定
+aws:
+  # デフォルトのAWSリージョン
+  region: us-east-1
+  # Bedrockモデル（環境変数AWS_MODEL_IDで上書き可能）
+  model_id: anthropic.claude-3-5-sonnet-20240620-v1:0
+
+# 出力設定
+output:
+  # 出力ディレクトリ（環境変数OUTPUT_DIRECTORYで上書き可能）
+  directory: custom_output
+  # デフォルトのJSONファイル名
+  default_json_filename: terraform_plan.json
+  # デフォルトのレポートファイル名
+  default_report_filename: terraform_report.json
+  # デフォルトのHTMLファイル名
+  default_html_filename: terraform_report.html
+
+# アプリケーション設定
+app:
+  # 使用言語（ja/en）（環境変数APP_LANGUAGEで上書き可能）
+  language: en
+  # デバッグモード（環境変数APP_DEBUGで上書き可能）
+  debug: true

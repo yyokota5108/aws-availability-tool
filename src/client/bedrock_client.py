@@ -10,6 +10,8 @@ from typing import Dict, Any, Optional
 import boto3
 from rich.console import Console
 
+from src.config import get_settings
+
 # Richコンソールを初期化
 console = Console()
 
@@ -22,7 +24,7 @@ class BedrockClient:
     def __init__(
         self,
         bedrock_client: Any = None,
-        model_id: str = "anthropic.claude-3-5-sonnet-20240620-v1:0",
+        model_id: Optional[str] = None,
         region_name: Optional[str] = None,
     ) -> None:
         """
@@ -30,14 +32,15 @@ class BedrockClient:
 
         Args:
             bedrock_client: 既存のboto3 Bedrock clientインスタンス（指定がなければ新規作成）
-            model_id: 使用するBedrockモデルID
-            region_name: AWSリージョン名（指定がなければ環境変数か既定値から取得）
+            model_id: 使用するBedrockモデルID（Noneの場合は設定から取得）
+            region_name: AWSリージョン名（Noneの場合は設定から取得）
         """
-        self.region_name = region_name or os.environ.get("AWS_REGION", "ap-northeast-1")
+        settings = get_settings()
+        self.region_name = region_name or settings["aws"]["region"]
         self.bedrock_client = bedrock_client or boto3.client(
             service_name="bedrock-runtime", region_name=self.region_name
         )
-        self.model_id = model_id
+        self.model_id = model_id or settings["aws"]["model_id"]
 
     def invoke(
         self, prompt: str, max_tokens: int = 4096, temperature: float = 0.2

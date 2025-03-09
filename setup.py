@@ -20,6 +20,8 @@ setup(
         "boto3>=1.28.0",
         "rich>=13.0.0",
         "tfparse>=0.4.0",
+        "pyyaml>=6.0.0",
+        "python-dotenv>=1.0.0",
     ],
     extras_require={
         "dev": [

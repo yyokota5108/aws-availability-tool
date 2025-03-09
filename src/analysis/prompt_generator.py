@@ -2,7 +2,10 @@
 Bedrockへ送信するプロンプトを生成するモジュール
 """
 
-from typing import Dict, Any
+from typing import Dict, Any, Optional
+import json
+
+from src.config import get_settings
 
 
 class PromptGenerator:
@@ -10,14 +13,15 @@ class PromptGenerator:
     Terraform解析用のプロンプトを生成するクラス
     """
 
-    def __init__(self, language: str = "ja"):
+    def __init__(self, language: Optional[str] = None):
         """
         PromptGeneratorの初期化
 
         Args:
-            language: プロンプトの言語（デフォルトは日本語）
+            language: プロンプトの言語（Noneの場合は設定から取得）
         """
-        self.language = language
+        settings = get_settings()
+        self.language = language or settings["app"]["language"]
 
     def create_availability_prompt(self, terraform_data: Dict[str, Any]) -> str:
         """
@@ -141,8 +145,6 @@ with the most significant impact.
         Returns:
             整形されたJSONテキスト
         """
-        import json
-
         # JSONの整形（読みやすさのため）
         if terraform_data:
             return json.dumps(terraform_data, indent=2, ensure_ascii=False)
