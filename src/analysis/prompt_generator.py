@@ -90,7 +90,6 @@ AWSのTerraformコードの可用性を評価してください。AWS Well-Archi
       "priority": "high/medium/low",
       "description": "推奨事項の詳細説明",
       "effort": "high/medium/low（実装の難易度）",
-      "terraform_example": "改善のためのTerraformコード例（該当する場合）",
       "cost_impact": "increase/neutral/decrease（コストへの影響）"
     }}
   ],
@@ -102,7 +101,6 @@ AWSのTerraformコードの可用性を評価してください。AWS Well-Archi
 ```
 
 高可用性の観点から重要な問題に焦点を当て、最も影響の大きい改善策を優先してください。
-各推奨事項には、可能な限り具体的なTerraformコード例を含めてください。
 コスト効率と可用性のバランスを考慮し、過剰な冗長性は避けつつ、適切な耐障害性を持つ設計を提案してください。
 """
         else:
@@ -151,7 +149,6 @@ Please provide your analysis in the following JSON format:
       "priority": "high/medium/low",
       "description": "Detailed description of the recommendation",
       "effort": "high/medium/low (implementation difficulty)",
-      "terraform_example": "Example Terraform code for implementation (if applicable)",
       "cost_impact": "increase/neutral/decrease (impact on cost)"
     }}
   ],
@@ -163,9 +160,8 @@ Please provide your analysis in the following JSON format:
 ```
 
 Focus on important issues from a high availability perspective and prioritize improvements
-with the most significant impact. Include specific Terraform code examples where possible.
-Consider the balance between cost efficiency and availability, avoiding excessive redundancy
-while ensuring appropriate fault tolerance.
+with the most significant impact. Consider the balance between cost efficiency and availability, 
+avoiding excessive redundancy while ensuring appropriate fault tolerance.
 """
 
         return system_prompt
