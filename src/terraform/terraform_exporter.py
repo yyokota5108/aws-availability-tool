@@ -6,26 +6,29 @@ import os
 import json
 from typing import Dict, Any, Tuple, Optional, cast
 
+from src.config import get_settings
+
 
 class TerraformExporter:
     """
     Terraformコードを解析しJSONに変換するクラス
     """
 
-    def __init__(self, output_dir: str = "output"):
+    def __init__(self, output_dir: Optional[str] = None):
         """
         TerraformExporterの初期化
-
+        
         Args:
-            output_dir: 出力ディレクトリのパス
+            output_dir: 出力ディレクトリのパス (Noneの場合は設定から取得)
         """
-        self.output_dir = output_dir
+        settings = get_settings()
+        self.output_dir = output_dir or settings["output"]["directory"]
         self._ensure_output_directory()
 
     def _ensure_output_directory(self) -> str:
         """
         出力ディレクトリが存在することを確認し、なければ作成する
-
+        
         Returns:
             出力ディレクトリのパス
         """
@@ -37,11 +40,11 @@ class TerraformExporter:
     ) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
         """
         Terraformコードを解析し、結果をJSONファイルとして出力する
-
+        
         Args:
             terraform_path: Terraformプロジェクトのパス
             output_file: 出力JSONファイルのパス（指定がなければ自動生成）
-
+            
         Returns:
             (解析結果のデータ, 出力ファイルのパス)のタプル
         """
@@ -65,8 +68,11 @@ class TerraformExporter:
                 print("'__tfmeta'をエクスポート結果から除外しました。")
 
             # 出力ファイル名が指定されていない場合は、デフォルトのファイル名を使用
+            settings = get_settings()
             if output_file is None:
-                output_file = os.path.join(self.output_dir, "terraform_parsed.json")
+                output_file = os.path.join(
+                    self.output_dir, settings["output"]["default_json_filename"]
+                )
             else:
                 # 出力ファイルのパスが絶対パスでない場合は、output_dirと結合
                 if not os.path.isabs(output_file):
@@ -90,7 +96,7 @@ class TerraformExporter:
     def _print_summary(self, parsed_data: Dict[str, Any]) -> None:
         """
         解析結果の概要を表示
-
+        
         Args:
             parsed_data: 解析されたTerraformデータ
         """
@@ -109,10 +115,10 @@ class TerraformExporter:
     def load_from_json(self, json_file: str) -> Optional[Dict[str, Any]]:
         """
         既存のJSONファイルからTerraformデータを読み込む
-
+        
         Args:
             json_file: JSONファイルのパス
-
+            
         Returns:
             読み込まれたTerraformデータ
         """
