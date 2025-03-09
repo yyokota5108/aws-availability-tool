@@ -1,20 +1,21 @@
 #!/usr/bin/env python3
 """
-Terraform可用性チェックツール
+Terraform可用性チェックツール CLI
 
-Terraformコードを解析してJSONに変換し、AWSリソースの可用性を評価するツール
+Terraformコードを解析してJSONに変換し、AWSリソースの可用性を評価するCLIツール
 """
 
 import argparse
 import os
 import sys
 import time
+from typing import Dict, Any, Optional
+
 from rich.console import Console
 from rich.panel import Panel
 
-# 自作モジュールのインポート
-from export_terraform_json import export_terraform_to_json, ensure_output_directory
-from availability_checker import AvailabilityChecker
+from src.terraform.terraform_exporter import TerraformExporter
+from src.analysis.availability_checker import AvailabilityChecker
 
 # Richコンソールを初期化
 console = Console()
@@ -25,25 +26,25 @@ def print_help_examples():
 === 使用例 ===
 
 基本的な使い方:
-    python terraform_availability_checker.py ./terraform_project
+    python -m src.cli ./terraform_project
 
 Terraform解析結果をJSONファイルに保存:
-    python terraform_availability_checker.py ./terraform_project --json-output terraform_plan.json
+    python -m src.cli ./terraform_project --json-output terraform_plan.json
 
 可用性評価レポートをJSONファイルに保存:
-    python terraform_availability_checker.py ./terraform_project --report-output availability_report.json
+    python -m src.cli ./terraform_project --report-output availability_report.json
 
 可用性評価結果をHTMLファイルとして出力:
-    python terraform_availability_checker.py ./terraform_project --html availability_report.html
+    python -m src.cli ./terraform_project --html availability_report.html
 
 すべての出力形式を指定:
-    python terraform_availability_checker.py ./terraform_project --json-output terraform_plan.json --report-output availability_report.json --html availability_report.html
+    python -m src.cli ./terraform_project --json-output terraform_plan.json --report-output availability_report.json --html availability_report.html
 
 異なるAWSリージョンを指定:
-    python terraform_availability_checker.py ./terraform_project --region us-east-1
+    python -m src.cli ./terraform_project --region us-east-1
 
 Terraform解析のみを実行 (可用性分析をスキップ):
-    python terraform_availability_checker.py ./terraform_project --skip-analysis --json-output terraform_plan.json
+    python -m src.cli ./terraform_project --skip-analysis --json-output terraform_plan.json
 """
     console.print(Panel(examples, title="[bold]コマンドライン使用例[/bold]", border_style="cyan"))
 
@@ -69,6 +70,10 @@ def main():
     parser.add_argument('--model', 
                         help='Bedrock モデルID', 
                         default='anthropic.claude-3-5-sonnet-20240620-v1:0')
+    parser.add_argument('--language',
+                        help='使用する言語（ja/en）',
+                        choices=['ja', 'en'],
+                        default='ja')
     parser.add_argument('--skip-analysis', 
                         action='store_true', 
                         help='Bedrockによる分析をスキップし、JSONエクスポートのみを実行')
@@ -115,8 +120,11 @@ def main():
     console.print("\n[bold]ステップ1: Terraformコードの解析[/bold]")
     console.print(f"Terraformプロジェクトのパス: [bold]{args.terraform_dir}[/bold]")
     
+    # Terraformエクスポーターの初期化
+    terraform_exporter = TerraformExporter()
+    
     start_time = time.time()
-    terraform_data, json_file = export_terraform_to_json(
+    terraform_data, json_file = terraform_exporter.export_to_json(
         args.terraform_dir, 
         args.json_output
     )
@@ -138,7 +146,12 @@ def main():
     console.print("\n[bold]ステップ2: Bedrockによる可用性分析[/bold]")
     
     # チェッカーの初期化
-    checker = AvailabilityChecker(model_id=args.model)
+    checker = AvailabilityChecker(
+        model_id=args.model,
+        region_name=args.region,
+        language=args.language,
+        debug=args.debug
+    )
     
     # 分析実行
     analysis_start_time = time.time()
@@ -150,33 +163,14 @@ def main():
     # 結果表示
     checker.print_analysis_results(analysis_results)
     
-    # 結果の保存
+    # 結果の保存（JSON）
     if args.report_output:
-        import json
-        
-        # 出力ディレクトリを確保
-        output_dir = ensure_output_directory()
-        
-        # 出力ファイルパスの設定
-        report_file = args.report_output
-        if not os.path.isabs(report_file):
-            report_file = os.path.join(output_dir, os.path.basename(report_file))
-            
-        with open(report_file, 'w') as f:
-            json.dump(analysis_results, f, indent=2, ensure_ascii=False)
+        report_file = checker.save_json_report(analysis_results, args.report_output)
         console.print(f"\n可用性評価レポートを保存しました: [bold]{report_file}[/bold]")
     
     # HTML形式で出力
     if args.html:
-        # 出力ディレクトリを確保
-        output_dir = ensure_output_directory()
-        
-        # 出力ファイルパスの設定
-        html_file = args.html
-        if not os.path.isabs(html_file):
-            html_file = os.path.join(output_dir, os.path.basename(html_file))
-        
-        checker.export_as_html(analysis_results, html_file)
+        html_file = checker.export_as_html(analysis_results, args.html)
         console.print(f"\n可用性評価レポートをHTMLファイルに保存しました: [bold]{html_file}[/bold]")
     
     # 総実行時間
