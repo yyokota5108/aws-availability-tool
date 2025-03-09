@@ -114,6 +114,7 @@ def main() -> None:
         "--skip-analysis", action="store_true", help="Bedrockによる分析をスキップし、JSONエクスポートのみを実行"
     )
     parser.add_argument("--debug", action="store_true", help="デバッグモードを有効化")
+    parser.add_argument("--detailed", action="store_true", help="詳細分析モードを有効化（リソース固有の分析を含む）")
     parser.add_argument("--example", action="store_true", help="使用例を表示")
     parser.add_argument("--config", help="設定ファイルのパス")
     parser.add_argument("--config-help", action="store_true", help="設定関連のヘルプを表示")
@@ -208,6 +209,7 @@ def main() -> None:
         region_name=args.region,
         language=args.language,
         debug=args.debug if args.debug else None,
+        detailed_mode=args.detailed,
     )
 
     # 分析実行

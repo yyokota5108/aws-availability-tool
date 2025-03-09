@@ -23,6 +23,7 @@ class AvailabilityChecker:
         region_name: Optional[str] = None,
         language: Optional[str] = None,
         debug: Optional[bool] = None,
+        detailed_mode: Optional[bool] = None,
     ) -> None:
         """
         AvailabilityCheckerの初期化
@@ -32,11 +33,15 @@ class AvailabilityChecker:
             region_name: AWSリージョン名（Noneの場合は設定から取得）
             language: 使用言語（Noneの場合は設定から取得）
             debug: デバッグモードを有効にするかどうか（Noneの場合は設定から取得）
+            detailed_mode: 詳細分析モードを有効にするかどうか（Noneの場合は設定から取得）
         """
         settings = get_settings()
         
         # デバッグ設定
         self.debug = debug if debug is not None else settings["app"]["debug"]
+        
+        # 詳細モード設定
+        self.detailed_mode = detailed_mode if detailed_mode is not None else settings["app"].get("detailed_mode", False)
         
         # 各コンポーネントの初期化
         self.bedrock_client = BedrockClient(model_id=model_id, region_name=region_name)
@@ -56,7 +61,10 @@ class AvailabilityChecker:
             分析結果
         """
         # プロンプトの作成
-        prompt = self.prompt_generator.create_availability_prompt(terraform_data)
+        prompt = self.prompt_generator.create_availability_prompt(
+            terraform_data, 
+            detailed_mode=self.detailed_mode
+        )
 
         # Bedrockを使用して分析
         response = self.bedrock_client.invoke(prompt)

@@ -71,7 +71,7 @@ python -m src.cli /path/to/terraform/project
 ### オプション
 
 ```
-使用方法: terraform-availability [-h] [--json-output JSON_OUTPUT] [--report-output REPORT_OUTPUT] [--html HTML] [--region REGION] [--model MODEL] [--language {ja,en}] [--skip-analysis] [--debug] [--example] [terraform_dir]
+使用方法: terraform-availability [-h] [--json-output JSON_OUTPUT] [--report-output REPORT_OUTPUT] [--html HTML] [--region REGION] [--model MODEL] [--language {ja,en}] [--skip-analysis] [--debug] [--detailed] [--example] [terraform_dir]
 
 AWSリソースの可用性チェックツール (Terraform解析 + Bedrockによる可用性評価)
 
@@ -90,6 +90,7 @@ AWSリソースの可用性チェックツール (Terraform解析 + Bedrockに�
   --language {ja,en}     使用する言語（ja/en）
   --skip-analysis        Bedrockによる分析をスキップし、JSONエクスポートのみを実行
   --debug                デバッグモードを有効化
+  --detailed             詳細分析モードを有効化（リソース固有の分析を含む）
   --example              使用例を表示
 ```
 
@@ -117,6 +118,12 @@ terraform-availability ~/projects/my-terraform-project \
 ```bash
 terraform-availability ~/projects/my-terraform-project \
     --language en
+```
+
+#### 詳細分析モードの使用
+```bash
+terraform-availability ~/projects/my-terraform-project \
+    --detailed
 ```
 
 #### JSON変換のみ実行
@@ -163,6 +170,7 @@ output:
 app:
   language: ja
   debug: false
+  detailed_mode: false
 ```
 
 ### 環境変数
@@ -180,6 +188,7 @@ export OUTPUT_DIRECTORY=custom_output
 # アプリケーション設定
 export APP_LANGUAGE=en
 export APP_DEBUG=true
+export APP_DETAILED_MODE=true
 ```
 
 環境変数を `.env` ファイルに保存することもできます。サンプルは `.env.example` にあります：

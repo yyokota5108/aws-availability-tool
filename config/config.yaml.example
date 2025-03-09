@@ -23,4 +23,6 @@ app:
   # 使用言語（ja/en）（環境変数APP_LANGUAGEで上書き可能）
   language: ja
   # デバッグモード（環境変数APP_DEBUGで上書き可能）
-  debug: false 
+  debug: false
+  # 詳細分析モード（環境変数APP_DETAILED_MODEで上書き可能）
+  detailed_mode: false 

@@ -28,6 +28,7 @@ DEFAULT_SETTINGS = {
     "app": {
         "language": "ja",
         "debug": False,
+        "detailed_mode": False,
     },
 }
 
