@@ -107,5 +107,24 @@ class AnalysisParser:
                     "[bold yellow]警告: 'recommendations'がリストではありません[/bold yellow]"
                 )
             return False
+            
+        # suggested_sloの検証（存在する場合）
+        if "suggested_slo" in results:
+            if not isinstance(results["suggested_slo"], dict):
+                if self.debug:
+                    console.print(
+                        "[bold yellow]警告: 'suggested_slo'が辞書ではありません[/bold yellow]"
+                    )
+                return False
+                
+            # suggested_sloの必須キーの確認
+            slo_required_keys = ["availability_target", "rationale"]
+            for key in slo_required_keys:
+                if key not in results["suggested_slo"]:
+                    if self.debug:
+                        console.print(
+                            f"[bold yellow]警告: 'suggested_slo'に必須キー '{key}' がありません[/bold yellow]"
+                        )
+                    return False
 
         return True

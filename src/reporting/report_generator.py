@@ -222,6 +222,19 @@ class ReportGenerator:
         </div>
     </section>
 """
+        
+        # 推奨SLOの生成（存在する場合）
+        if "suggested_slo" in results and isinstance(results["suggested_slo"], dict):
+            slo = results["suggested_slo"]
+            html += f"""
+    <section>
+        <h2>推奨SLO（サービスレベル目標）</h2>
+        <div class="overview">
+            <p><strong>可用性目標:</strong> {slo.get("availability_target", "")}</p>
+            <p><strong>根拠:</strong> {slo.get("rationale", "")}</p>
+        </div>
+    </section>
+"""
 
         # 問題点テーブルの生成
         if "findings" in results and results["findings"]:
@@ -262,6 +275,8 @@ class ReportGenerator:
                     <th>重要度</th>
                     <th>説明</th>
                     <th>推奨対応</th>
+                    <th>実装難易度</th>
+                    <th>リスク影響度</th>
                 </tr>
             </thead>
             <tbody>
@@ -270,6 +285,12 @@ class ReportGenerator:
         for finding in findings:
             severity = finding.get("severity", "")
             severity_class = self._get_severity_class(severity)
+            
+            effort = finding.get("effort", "")
+            effort_class = self._get_severity_class(effort)
+            
+            risk_impact = finding.get("risk_impact", "")
+            risk_class = self._get_severity_class(risk_impact)
 
             html += f"""
                 <tr>
@@ -277,6 +298,8 @@ class ReportGenerator:
                     <td class="{severity_class}">{severity}</td>
                     <td>{finding.get("description", "")}</td>
                     <td>{finding.get("recommendation", "")}</td>
+                    <td class="{effort_class}">{effort}</td>
+                    <td class="{risk_class}">{risk_impact}</td>
                 </tr>
 """
 
@@ -306,20 +329,19 @@ class ReportGenerator:
         for i, rec in enumerate(recommendations, 1):
             priority = rec.get("priority", "")
             priority_class = self._get_severity_class(priority)
+            
+            effort = rec.get("effort", "")
+            effort_class = self._get_severity_class(effort)
+            
+            cost_impact = rec.get("cost_impact", "")
 
             html += f"""
         <div class="recommendation">
-            <h3>推奨事項 {i}: <span class="{priority_class}">優先度: {priority}</span></h3>
+            <h3>推奨事項 {i}</h3>
+            <p><span class="{priority_class}"><strong>優先度:</strong> {priority}</span>
+            {f' | <span class="{effort_class}"><strong>実装難易度:</strong> {effort}</span>' if effort else ''}
+            {f' | <strong>コスト影響:</strong> {cost_impact}' if cost_impact else ''}</p>
             <p>{rec.get("description", "")}</p>
-"""
-
-            if "terraform_example" in rec and rec["terraform_example"]:
-                html += f"""
-            <h4>実装例:</h4>
-            <pre><code>{rec["terraform_example"]}</code></pre>
-"""
-
-            html += """
         </div>
 """
 

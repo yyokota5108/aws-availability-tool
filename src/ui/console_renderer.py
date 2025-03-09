@@ -59,6 +59,10 @@ class ConsoleRenderer:
             self.console.print(
                 f"\n[bold]可用性スコア:[/bold] [bold {color}]{score}/100[/bold {color}]"
             )
+            
+        # 推奨SLO（存在する場合）
+        if "suggested_slo" in results:
+            self._print_suggested_slo(results["suggested_slo"])
 
         # 問題点
         if "findings" in results and results["findings"]:
@@ -67,6 +71,21 @@ class ConsoleRenderer:
         # 推奨事項
         if "recommendations" in results and results["recommendations"]:
             self._print_recommendations(results["recommendations"])
+
+    def _print_suggested_slo(self, slo: Dict[str, Any]) -> None:
+        """
+        推奨SLOを表示
+        
+        Args:
+            slo: SLO情報の辞書
+        """
+        if "availability_target" in slo:
+            self.console.print("\n[bold]推奨SLO（サービスレベル目標）:[/bold]")
+            self.console.print(
+                f"可用性目標: [bold cyan]{slo.get('availability_target', '')}[/bold cyan]"
+            )
+            if "rationale" in slo:
+                self.console.print(f"根拠: {slo.get('rationale', '')}")
 
     def _print_findings(self, findings: List[Dict[str, Any]]) -> None:
         """
@@ -82,16 +101,26 @@ class ConsoleRenderer:
         table.add_column("重要度", style="bold")
         table.add_column("説明", style="white")
         table.add_column("推奨対応", style="green")
+        table.add_column("実装難易度", style="yellow")
+        table.add_column("リスク影響度", style="red")
 
         for finding in findings:
             severity = finding.get("severity", "")
             severity_style = self._get_severity_style(severity)
+            
+            effort = finding.get("effort", "")
+            effort_style = self._get_severity_style(effort)
+            
+            risk_impact = finding.get("risk_impact", "")
+            risk_style = self._get_severity_style(risk_impact)
 
             table.add_row(
                 finding.get("category", ""),
                 Text(severity, style=severity_style),
                 finding.get("description", ""),
                 finding.get("recommendation", ""),
+                Text(effort, style=effort_style) if effort else "",
+                Text(risk_impact, style=risk_style) if risk_impact else "",
             )
 
         self.console.print(table)
@@ -108,12 +137,21 @@ class ConsoleRenderer:
         for i, rec in enumerate(recommendations, 1):
             priority = rec.get("priority", "")
             priority_style = self._get_severity_style(priority)
+            
+            effort = rec.get("effort", "")
+            effort_text = f"[yellow]実装難易度: {effort}[/yellow]" if effort else ""
+            
+            cost_impact = rec.get("cost_impact", "")
+            cost_text = f"[blue]コスト影響: {cost_impact}[/blue]" if cost_impact else ""
+            
+            metadata = " | ".join(filter(None, [
+                f"[{priority_style}]優先度: {priority}[/{priority_style}]",
+                effort_text,
+                cost_text
+            ]))
 
-            title = f"[bold]推奨事項 {i}: [/bold][{priority_style}]優先度: {priority}[/{priority_style}]"
-
-            content = f"{rec.get('description', '')}\n\n"
-            if "terraform_example" in rec and rec["terraform_example"]:
-                content += "[bold]実装例:[/bold]\n```hcl\n" + rec["terraform_example"] + "\n```"
+            title = f"[bold]推奨事項 {i}[/bold]" + (f": {metadata}" if metadata else "")
+            content = rec.get("description", "")
 
             self.console.print(Panel(content, title=title, border_style="green"))
 
