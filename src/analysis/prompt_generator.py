@@ -51,11 +51,23 @@ AWSのTerraformコードの可用性を評価してください。AWS Well-Archi
 評価項目:
 1. マルチAZ構成: リソースが複数のアベイラビリティーゾーンにデプロイされているか
 2. 単一障害点(SPOF): システム内に単一障害点が存在するか
-3. ロードバランサーの設定: 適切に設定されているか
-4. オートスケーリングの設定: 需要の変動に対応できるか
-5. バックアップと復旧メカニズム: データ損失からの保護と復旧手段
-6. タイムアウト設定とリトライ機構: 一時的な障害からの回復
-7. その他の可用性関連の設定
+3. ロードバランサーの設定: 適切に設定されているか（該当する場合）
+4. オートスケーリングの設定: 需要の変動に対応できるか（該当する場合）
+5. サーバーレスアーキテクチャの高可用性:
+   - Lambda関数の冗長性と並列実行設定
+   - API Gatewayのスロットリングとステージ設定
+   - DynamoDBのグローバルテーブルと読み書き容量
+   - S3のクロスリージョンレプリケーション設定
+   - Step Functionsのエラーハンドリングとリトライ設定
+6. バックアップと復旧メカニズム: データ損失からの保護と復旧手段
+7. タイムアウト設定とリトライ機構: 一時的な障害からの回復
+8. リージョン間の復元力: 地理的な冗長性があるか
+9. その他の可用性関連の設定
+
+注意事項:
+- VPC構成がある場合は、ネットワークの可用性についても評価してください。
+- サーバーレス構成の場合は、Lambda、API Gateway、DynamoDB、S3などのサービスの設定を重点的に評価してください。
+- 両方の要素が混在する場合は、それぞれの観点から評価してください。
 
 分析結果を以下のJSON形式で提供してください:
 
@@ -98,11 +110,23 @@ Analyze the following Terraform resources in JSON format:
 Evaluation criteria:
 1. Multi-AZ Configuration: Are resources deployed across multiple Availability Zones?
 2. Single Points of Failure (SPOF): Are there any single points of failure in the system?
-3. Load Balancer Configuration: Are load balancers properly configured?
-4. Auto Scaling Configuration: Can the system handle demand fluctuations?
-5. Backup and Recovery Mechanisms: Protection against data loss and recovery methods
-6. Timeout Settings and Retry Mechanisms: Recovery from temporary failures
-7. Other availability-related configurations
+3. Load Balancer Configuration: Are load balancers properly configured? (if applicable)
+4. Auto Scaling Configuration: Can the system handle demand fluctuations? (if applicable)
+5. Serverless Architecture High Availability:
+   - Lambda function redundancy and concurrent execution settings
+   - API Gateway throttling and stage settings
+   - DynamoDB global tables and read/write capacity
+   - S3 cross-region replication configuration
+   - Step Functions error handling and retry settings
+6. Backup and Recovery Mechanisms: Protection against data loss and recovery methods
+7. Timeout Settings and Retry Mechanisms: Recovery from temporary failures
+8. Cross-Region Resilience: Is there geographical redundancy?
+9. Other availability-related configurations
+
+Notes:
+- If VPC configuration exists, evaluate network availability as well.
+- For serverless configurations, focus on evaluating Lambda, API Gateway, DynamoDB, S3, and other relevant service settings.
+- If both elements are present, evaluate from both perspectives.
 
 Please provide your analysis in the following JSON format:
 
