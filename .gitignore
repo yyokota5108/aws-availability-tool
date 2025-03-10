@@ -107,6 +107,7 @@ venv.bak/
 
 # Project specific
 output/
+custom_output/
 
 # Terraform
 **/.terraform/
