@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS Terraform可用性分析レポート</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: #0066cc;
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        h1, h2, h3 {
+            margin-top: 0;
+        }
+        .score-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .score {
+            font-size: 48px;
+            font-weight: bold;
+        }
+        .score-high {
+            color: #28a745;
+        }
+        .score-medium {
+            color: #ffc107;
+        }
+        .score-low {
+            color: #dc3545;
+        }
+        .overview {
+            background-color: #f8f9fa;
+            border-left: 5px solid #0066cc;
+            padding: 15px;
+            margin-bottom: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .severity-high, .priority-high {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .severity-medium, .priority-medium {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        .severity-low, .priority-low {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .recommendation {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .recommendation h3 {
+            margin-top: 0;
+            border-bottom: 2px solid #0066cc;
+            padding-bottom: 10px;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        footer {
+            margin-top: 50px;
+            text-align: center;
+            color: #777;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>AWS Terraform可用性分析レポート</h1>
+        <p>AWS Well-Architected Frameworkの信頼性の柱に基づく評価</p>
+    </header>
+
+    <div class="score-container">
+        <h2>可用性スコア</h2>
+        <div class="score score-medium">65/100</div>
+    </div>
+
+    <section>
+        <h2>概要</h2>
+        <div class="overview">
+            <p>The infrastructure has some good practices in place for availability, such as multi-AZ deployment for certain resources and the use of WAF. However, there are several areas where improvements can be made to enhance overall reliability and availability.</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>検出された問題点</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>カテゴリ</th>
+                    <th>重要度</th>
+                    <th>説明</th>
+                    <th>推奨対応</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <tr>
+                    <td>Multi-AZ</td>
+                    <td class="severity-medium">medium</td>
+                    <td>The VPC is configured with public and private subnets across two Availability Zones, which is good for high availability. However, some resources like DynamoDB and Lambda functions may not be fully utilizing this multi-AZ setup.</td>
+                    <td>Ensure that DynamoDB is configured for global tables or enable cross-region replication. Configure Lambda functions to run in multiple AZs.</td>
+                </tr>
+
+                <tr>
+                    <td>SPOF</td>
+                    <td class="severity-high">high</td>
+                    <td>The API Gateway and Lambda function could be potential single points of failure. There's no clear indication of redundancy or failover mechanisms for these critical components.</td>
+                    <td>Implement API Gateway regional endpoints and consider using AWS Global Accelerator for improved availability. Use Lambda provisioned concurrency to ensure capacity.</td>
+                </tr>
+
+                <tr>
+                    <td>Load Balancer</td>
+                    <td class="severity-high">high</td>
+                    <td>There is no Application Load Balancer (ALB) or Network Load Balancer (NLB) configured, which could improve the distribution of incoming traffic and provide better fault tolerance.</td>
+                    <td>Implement an Application Load Balancer in front of the API Gateway to improve traffic distribution and fault tolerance.</td>
+                </tr>
+
+                <tr>
+                    <td>Auto Scaling</td>
+                    <td class="severity-medium">medium</td>
+                    <td>There's no explicit auto-scaling configuration for the Lambda functions or DynamoDB, which could lead to performance issues during high traffic periods.</td>
+                    <td>Implement auto-scaling for Lambda functions using provisioned concurrency. Configure DynamoDB auto-scaling for read and write capacity units.</td>
+                </tr>
+
+                <tr>
+                    <td>Backup and Recovery</td>
+                    <td class="severity-medium">medium</td>
+                    <td>While DynamoDB has point-in-time recovery enabled, there's no clear backup strategy for other data stores like S3.</td>
+                    <td>Implement regular backups for S3 buckets using cross-region replication or S3 batch operations for periodic backups.</td>
+                </tr>
+
+                <tr>
+                    <td>Timeout and Retry</td>
+                    <td class="severity-low">low</td>
+                    <td>Lambda functions have a timeout set, but there's no clear retry mechanism for failed operations.</td>
+                    <td>Implement retry logic in Lambda functions for transient failures. Consider using Step Functions for complex workflows that require robust error handling and retries.</td>
+                </tr>
+
+            </tbody>
+        </table>
+    </section>
+
+    <section>
+        <h2>改善推奨事項</h2>
+
+        <div class="recommendation">
+            <h3>推奨事項 1: <span class="severity-high">優先度: high</span></h3>
+            <p>Implement an Application Load Balancer in front of the API Gateway to improve traffic distribution and fault tolerance. This will also help in handling potential spikes in traffic.</p>
+
+        </div>
+
+        <div class="recommendation">
+            <h3>推奨事項 2: <span class="severity-high">優先度: high</span></h3>
+            <p>Configure Lambda functions to run in multiple AZs and implement auto-scaling using provisioned concurrency to handle varying loads efficiently.</p>
+
+        </div>
+
+        <div class="recommendation">
+            <h3>推奨事項 3: <span class="severity-medium">優先度: medium</span></h3>
+            <p>Enable DynamoDB global tables or cross-region replication to improve data availability and disaster recovery capabilities.</p>
+
+        </div>
+
+        <div class="recommendation">
+            <h3>推奨事項 4: <span class="severity-medium">優先度: medium</span></h3>
+            <p>Implement a comprehensive backup strategy for all data stores, including S3 buckets, using cross-region replication or periodic backups.</p>
+
+        </div>
+
+        <div class="recommendation">
+            <h3>推奨事項 5: <span class="severity-low">優先度: low</span></h3>
+            <p>Enhance error handling and implement retry mechanisms in Lambda functions to improve resilience against transient failures.</p>
+
+        </div>
+
+    </section>
+
+    <footer>
+        <p>レポート生成: AWS Terraform可用性チェックツール</p>
+    </footer>
+</body>
+</html>
